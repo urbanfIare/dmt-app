@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DMT WebSocket 테스트</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .connected { background-color: #d4edda; color: #155724; }
+        .disconnected { background-color: #f8d7da; color: #721c24; }
+        .connecting { background-color: #fff3cd; color: #856404; }
+        
+        .notification {
+            background-color: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        
+        .notification.high { border-left: 5px solid #dc3545; }
+        .notification.normal { border-left: 5px solid #28a745; }
+        .notification.low { border-left: 5px solid #ffc107; }
+        
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        
+        button:hover { background-color: #0056b3; }
+        button:disabled { background-color: #6c757d; cursor: not-allowed; }
+        
+        input, select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin: 5px;
+        }
+        
+        .log {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        
+        .form-group {
+            margin: 15px 0;
+        }
+        
+        label {
+            display: inline-block;
+            width: 120px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>📱 DMT WebSocket 실시간 알림 테스트</h1>
+    
+    <div class="container">
+        <h2>🔌 WebSocket 연결 상태</h2>
+        <div id="connectionStatus" class="status disconnected">연결되지 않음</div>
+        <button onclick="connect()" id="connectBtn">연결</button>
+        <button onclick="disconnect()" id="disconnectBtn" disabled>연결 해제</button>
+    </div>
+    
+    <div class="container">
+        <h2>📨 알림 구독</h2>
+        <div class="form-group">
+            <label>사용자 ID:</label>
+            <input type="number" id="userId" value="1" min="1">
+            <button onclick="subscribeToPersonal()">개인 알림 구독</button>
+        </div>
+        <div class="form-group">
+            <label>스터디 그룹 ID:</label>
+            <input type="number" id="groupId" value="1" min="1">
+            <button onclick="subscribeToGroup()">그룹 알림 구독</button>
+        </div>
+        <button onclick="subscribeToPublic()">공개 알림 구독</button>
+    </div>
+    
+    <div class="container">
+        <h2>🧪 테스트 알림 전송</h2>
+        <div class="form-group">
+            <label>알림 타입:</label>
+            <select id="notificationType">
+                <option value="SESSION_START">세션 시작</option>
+                <option value="SESSION_END">세션 종료</option>
+                <option value="PHONE_RESTRICTION_ON">폰 사용 제한 시작</option>
+                <option value="PHONE_RESTRICTION_OFF">폰 사용 제한 해제</option>
+                <option value="EXCEPTION_REQUESTED">예외 신청</option>
+                <option value="EXCEPTION_APPROVED">예외 승인</option>
+                <option value="EXCEPTION_REJECTED">예외 거절</option>
+                <option value="ATTENDANCE_REMINDER">출석 알림</option>
+                <option value="GENERAL">일반 알림</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>알림 제목:</label>
+            <input type="text" id="notificationTitle" value="테스트 알림" style="width: 300px;">
+        </div>
+        <div class="form-group">
+            <label>알림 내용:</label>
+            <input type="text" id="notificationMessage" value="이것은 테스트 알림입니다." style="width: 400px;">
+        </div>
+        <div class="form-group">
+            <label>우선순위:</label>
+            <select id="notificationPriority">
+                <option value="LOW">낮음</option>
+                <option value="NORMAL" selected>보통</option>
+                <option value="HIGH">높음</option>
+                <option value="URGENT">긴급</option>
+            </select>
+        </div>
+        <button onclick="sendTestNotification()">테스트 알림 전송</button>
+    </div>
+    
+    <div class="container">
+        <h2>📱 수신된 알림</h2>
+        <div id="notifications"></div>
+    </div>
+    
+    <div class="container">
+        <h2>📋 연결 로그</h2>
+        <div id="log" class="log"></div>
+        <button onclick="clearLog()">로그 지우기</button>
+    </div>
+
+    <script>
+        let stompClient = null;
+        let isConnected = false;
+        let personalSubscription = null;
+        let groupSubscription = null;
+        let publicSubscription = null;
+        
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `[${timestamp}] ${message}\n`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        function updateConnectionStatus(status, message) {
+            const statusDiv = document.getElementById('connectionStatus');
+            statusDiv.className = `status ${status}`;
+            statusDiv.textContent = message;
+            
+            document.getElementById('connectBtn').disabled = status === 'connected';
+            document.getElementById('disconnectBtn').disabled = status !== 'connected';
+        }
+        
+        function connect() {
+            log('WebSocket 연결 시도 중...');
+            updateConnectionStatus('connecting', '연결 중...');
+            
+            const socket = new SockJS('/ws');
+            stompClient = Stomp.over(socket);
+            
+            stompClient.connect({}, function (frame) {
+                log('WebSocket 연결 성공: ' + frame);
+                updateConnectionStatus('connected', '연결됨');
+                isConnected = true;
+                
+                // 자동으로 공개 알림 구독
+                subscribeToPublic();
+            }, function (error) {
+                log('WebSocket 연결 실패: ' + error);
+                updateConnectionStatus('disconnected', '연결 실패');
+                isConnected = false;
+            });
+        }
+        
+        function disconnect() {
+            if (stompClient !== null) {
+                // 구독 해제
+                if (personalSubscription) {
+                    personalSubscription.unsubscribe();
+                    personalSubscription = null;
+                }
+                if (groupSubscription) {
+                    groupSubscription.unsubscribe();
+                    groupSubscription = null;
+                }
+                if (publicSubscription) {
+                    publicSubscription.unsubscribe();
+                    publicSubscription = null;
+                }
+                
+                stompClient.disconnect();
+                log('WebSocket 연결 해제됨');
+                updateConnectionStatus('disconnected', '연결되지 않음');
+                isConnected = false;
+            }
+        }
+        
+        function subscribeToPersonal() {
+            if (!isConnected) {
+                alert('먼저 WebSocket에 연결해주세요.');
+                return;
+            }
+            
+            const userId = document.getElementById('userId').value;
+            if (!userId) {
+                alert('사용자 ID를 입력해주세요.');
+                return;
+            }
+            
+            if (personalSubscription) {
+                personalSubscription.unsubscribe();
+            }
+            
+            personalSubscription = stompClient.subscribe(`/user/${userId}/queue/notifications`, function (notification) {
+                const data = JSON.parse(notification.body);
+                displayNotification(data, '개인');
+                log(`개인 알림 수신: ${data.title}`);
+            });
+            
+            log(`사용자 ${userId}의 개인 알림 구독 시작`);
+        }
+        
+        function subscribeToGroup() {
+            if (!isConnected) {
+                alert('먼저 WebSocket에 연결해주세요.');
+                return;
+            }
+            
+            const groupId = document.getElementById('groupId').value;
+            if (!groupId) {
+                alert('스터디 그룹 ID를 입력해주세요.');
+                return;
+            }
+            
+            if (groupSubscription) {
+                groupSubscription.unsubscribe();
+            }
+            
+            groupSubscription = stompClient.subscribe(`/topic/study-group/${groupId}`, function (notification) {
+                const data = JSON.parse(notification.body);
+                displayNotification(data, '그룹');
+                log(`그룹 알림 수신: ${data.title}`);
+            });
+            
+            log(`스터디 그룹 ${groupId}의 그룹 알림 구독 시작`);
+        }
+        
+        function subscribeToPublic() {
+            if (!isConnected) {
+                return;
+            }
+            
+            if (publicSubscription) {
+                publicSubscription.unsubscribe();
+            }
+            
+            publicSubscription = stompClient.subscribe('/topic/public', function (notification) {
+                const data = JSON.parse(notification.body);
+                displayNotification(data, '공개');
+                log(`공개 알림 수신: ${data.title}`);
+            });
+            
+            log('공개 알림 구독 시작');
+        }
+        
+        function displayNotification(notification, type) {
+            const notificationsDiv = document.getElementById('notifications');
+            const notificationDiv = document.createElement('div');
+            notificationDiv.className = `notification ${notification.priority?.toLowerCase() || 'normal'}`;
+            
+            const priorityText = notification.priority || 'NORMAL';
+            const priorityColor = {
+                'LOW': '#28a745',
+                'NORMAL': '#007bff',
+                'HIGH': '#ffc107',
+                'URGENT': '#dc3545'
+            }[priorityText] || '#007bff';
+            
+            notificationDiv.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong>[${type}] ${notification.title}</strong>
+                        <span style="color: ${priorityColor}; font-weight: bold; margin-left: 10px;">${priorityText}</span>
+                    </div>
+                    <small>${new Date(notification.createdAt).toLocaleTimeString()}</small>
+                </div>
+                <p>${notification.message}</p>
+                <small>타입: ${notification.type} | ID: ${notification.id}</small>
+            `;
+            
+            notificationsDiv.insertBefore(notificationDiv, notificationsDiv.firstChild);
+        }
+        
+        function sendTestNotification() {
+            if (!isConnected) {
+                alert('먼저 WebSocket에 연결해주세요.');
+                return;
+            }
+            
+            const type = document.getElementById('notificationType').value;
+            const title = document.getElementById('notificationTitle').value;
+            const message = document.getElementById('notificationMessage').value;
+            const priority = document.getElementById('notificationPriority').value;
+            
+            if (!title || !message) {
+                alert('알림 제목과 내용을 입력해주세요.');
+                return;
+            }
+            
+            const testNotification = {
+                id: Date.now().toString(),
+                type: type,
+                title: title,
+                message: message,
+                priority: priority,
+                createdAt: new Date().toISOString()
+            };
+            
+            // 공개 토픽으로 테스트 알림 전송
+            stompClient.send("/app/broadcast", {}, JSON.stringify(testNotification));
+            log(`테스트 알림 전송: ${title}`);
+        }
+        
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+        
+        // 페이지 로드 시 자동 연결
+        window.onload = function() {
+            log('DMT WebSocket 테스트 페이지 로드됨');
+            log('연결 버튼을 클릭하여 WebSocket에 연결하세요.');
+        };
+        
+        // 페이지 언로드 시 연결 해제
+        window.onbeforeunload = function() {
+            if (isConnected) {
+                disconnect();
+            }
+        };
+    </script>
+</body>
+</html> 

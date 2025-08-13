@@ -1,0 +1,1111 @@
+{
+	"info": {
+		"_postman_id": "dmt-api-collection-12345",
+		"name": "DMT API Collection",
+		"description": "Don't Touch My Time (DMT) 앱의 모든 API 엔드포인트를 포함한 Postman 컬렉션입니다.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "🚀 사용자 관리 API",
+			"item": [
+				{
+					"name": "사용자 등록",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"test@example.com\",\n  \"nickname\": \"테스트유저\",\n  \"password\": \"password123\",\n  \"phoneNumber\": \"010-1234-5678\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/users/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"register"
+							]
+						}
+					}
+				},
+				{
+					"name": "사용자 조회 (ID로)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/users/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"1"
+							]
+						}
+					}
+				},
+				{
+					"name": "사용자 조회 (이메일로)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/users/email/test@example.com",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"email",
+								"test@example.com"
+							]
+						}
+					}
+				},
+				{
+					"name": "전체 사용자 조회",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/users",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users"
+							]
+						}
+					}
+				},
+				{
+					"name": "사용자 정보 수정",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nickname\": \"수정된닉네임\",\n  \"phoneNumber\": \"010-1111-2222\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/users/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"1"
+							]
+						}
+					}
+				},
+				{
+					"name": "사용자 삭제",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/users/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"1"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "🏠 스터디 그룹 관리 API",
+			"item": [
+				{
+					"name": "스터디 그룹 생성",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"테스트 스터디 그룹\",\n  \"description\": \"DMT 앱 테스트용 그룹입니다.\",\n  \"maxMembers\": 5\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/study-groups?userId=1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"study-groups"
+							],
+							"query": [
+								{
+									"key": "userId",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "스터디 그룹 조회 (ID로)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/study-groups/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"study-groups",
+								"1"
+							]
+						}
+					}
+				},
+				{
+					"name": "전체 스터디 그룹 조회",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/study-groups",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"study-groups"
+							]
+						}
+					}
+				},
+				{
+					"name": "활성 스터디 그룹 조회",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/study-groups/active",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"study-groups",
+								"active"
+							]
+						}
+					}
+				},
+				{
+					"name": "사용자별 스터디 그룹 조회",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/study-groups/user/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"study-groups",
+								"user",
+								"1"
+							]
+						}
+					}
+				},
+				{
+					"name": "스터디 그룹 수정",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"수정된 그룹명\",\n  \"description\": \"수정된 설명\",\n  \"maxMembers\": 10\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/study-groups/1?userId=1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"study-groups",
+								"1"
+							],
+							"query": [
+								{
+									"key": "userId",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "스터디 그룹 삭제",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/study-groups/1?userId=1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"study-groups",
+								"1"
+							],
+							"query": [
+								{
+									"key": "userId",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "스터디 그룹 참여",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/study-groups/1/join?userId=2",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"study-groups",
+								"1",
+								"join"
+							],
+							"query": [
+								{
+									"key": "userId",
+									"value": "2"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "스터디 그룹 탈퇴",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/study-groups/1/leave?userId=2",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"study-groups",
+								"1",
+								"leave"
+							],
+							"query": [
+								{
+									"key": "userId",
+									"value": "2"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "📅 스터디 세션 관리 API",
+			"item": [
+				{
+					"name": "스터디 세션 생성",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"studyGroupId\": 1,\n  \"sessionName\": \"첫 번째 스터디 세션\",\n  \"startTime\": \"2024-08-13T14:00:00\",\n  \"endTime\": \"2024-08-13T16:00:00\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/study-sessions?userId=1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"study-sessions"
+							],
+							"query": [
+								{
+									"key": "userId",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "스터디 세션 조회 (ID로)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/study-sessions/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"study-sessions",
+								"1"
+							]
+						}
+					}
+				},
+				{
+					"name": "그룹별 스터디 세션 조회",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/study-sessions/study-group/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"study-sessions",
+								"study-group",
+								"1"
+							]
+						}
+					}
+				},
+				{
+					"name": "예정된 스터디 세션 조회",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/study-sessions/study-group/1/upcoming",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"study-sessions",
+								"study-group",
+								"1",
+								"upcoming"
+							]
+						}
+					}
+				},
+				{
+					"name": "현재 진행 중인 세션 조회",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/study-sessions/current",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"study-sessions",
+								"current"
+							]
+						}
+					}
+				},
+				{
+					"name": "스터디 세션 수정",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"sessionName\": \"수정된 세션명\",\n  \"startTime\": \"2024-08-13T15:00:00\",\n  \"endTime\": \"2024-08-13T17:00:00\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/study-sessions/1?userId=1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"study-sessions",
+								"1"
+							],
+							"query": [
+								{
+									"key": "userId",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "스터디 세션 상태 변경",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"IN_PROGRESS\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/study-sessions/1/status?userId=1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"study-sessions",
+								"1",
+								"status"
+							],
+							"query": [
+								{
+									"key": "userId",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "스터디 세션 삭제",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/study-sessions/1?userId=1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"study-sessions",
+								"1"
+							],
+							"query": [
+								{
+									"key": "userId",
+									"value": "1"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "✅ 출석 관리 API",
+			"item": [
+				{
+					"name": "출석 기록 생성",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": 1,\n  \"studySessionId\": 1,\n  \"status\": \"PRESENT\",\n  \"note\": \"정상 출석\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/attendances",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"attendances"
+							]
+						}
+					}
+				},
+				{
+					"name": "출석 기록 조회 (ID로)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/attendances/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"attendances",
+								"1"
+							]
+						}
+					}
+				},
+				{
+					"name": "사용자별 출석 기록 조회",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/attendances/user/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"attendances",
+								"user",
+								"1"
+							]
+						}
+					}
+				},
+				{
+					"name": "스터디 세션별 출석 기록 조회",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/attendances/study-session/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"attendances",
+								"study-session",
+								"1"
+							]
+						}
+					}
+				},
+				{
+					"name": "그룹별 출석 기록 조회",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/attendances/study-group/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"attendances",
+								"study-group",
+								"1"
+							]
+						}
+					}
+				},
+				{
+					"name": "출석 기록 수정",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"LATE\",\n  \"note\": \"10분 지각\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/attendances/1?userId=1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"attendances",
+								"1"
+							],
+							"query": [
+								{
+									"key": "userId",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "출석 기록 삭제",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/attendances/1?userId=1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"attendances",
+								"1"
+							],
+							"query": [
+								{
+									"key": "userId",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "출석률 요약 조회",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/attendances/summary/user/1/group/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"attendances",
+								"summary",
+								"user",
+								"1",
+								"group",
+								"1"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "📱 폰 사용 제한 예외 API",
+			"item": [
+				{
+					"name": "폰 사용 제한 예외 신청",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": 1,\n  \"studySessionId\": 1,\n  \"reason\": \"긴급한 연락이 필요합니다\",\n  \"exceptionStartTime\": \"2024-08-13T14:30:00\",\n  \"exceptionEndTime\": \"2024-08-13T15:00:00\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/phone-exceptions",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"phone-exceptions"
+							]
+						}
+					}
+				},
+				{
+					"name": "폰 사용 제한 예외 조회 (ID로)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/phone-exceptions/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"phone-exceptions",
+								"1"
+							]
+						}
+					}
+				},
+				{
+					"name": "사용자별 폰 사용 제한 예외 조회",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/phone-exceptions/user/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"phone-exceptions",
+								"user",
+								"1"
+							]
+						}
+					}
+				},
+				{
+					"name": "스터디 세션별 폰 사용 제한 예외 조회",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/phone-exceptions/study-session/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"phone-exceptions",
+								"study-session",
+								"1"
+							]
+						}
+					}
+				},
+				{
+					"name": "그룹별 대기 중인 예외 조회",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/phone-exceptions/study-group/1/pending",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"phone-exceptions",
+								"study-group",
+								"1",
+								"pending"
+							]
+						}
+					}
+				},
+				{
+					"name": "리더별 대기 중인 예외 조회",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/phone-exceptions/leader/1/pending",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"phone-exceptions",
+								"leader",
+								"1",
+								"pending"
+							]
+						}
+					}
+				},
+				{
+					"name": "폰 사용 제한 예외 승인/거절",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"APPROVED\",\n  \"note\": \"승인합니다\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/phone-exceptions/1/approve?leaderId=1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"phone-exceptions",
+								"1",
+								"approve"
+							],
+							"query": [
+								{
+									"key": "leaderId",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "폰 사용 제한 예외 수정",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"reason\": \"수정된 사유\",\n  \"exceptionStartTime\": \"2024-08-13T14:45:00\",\n  \"exceptionEndTime\": \"2024-08-13T15:15:00\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/phone-exceptions/1?userId=1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"phone-exceptions",
+								"1"
+							],
+							"query": [
+								{
+									"key": "userId",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "폰 사용 제한 예외 삭제",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/phone-exceptions/1?userId=1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"phone-exceptions",
+								"1"
+							],
+							"query": [
+								{
+									"key": "userId",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "현재 활성화된 예외 조회",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/phone-exceptions/active",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"phone-exceptions",
+								"active"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "🔧 테스트용 데이터 생성 순서",
+			"item": [
+				{
+					"name": "1단계: 관리자 사용자 생성",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"admin@dmt.com\",\n  \"nickname\": \"관리자\",\n  \"password\": \"admin123\",\n  \"phoneNumber\": \"010-0000-0000\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/users/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"register"
+							]
+						}
+					}
+				},
+				{
+					"name": "2단계: 일반 사용자 생성",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"user1@dmt.com\",\n  \"nickname\": \"테스트유저1\",\n  \"password\": \"user123\",\n  \"phoneNumber\": \"010-1111-1111\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/users/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"register"
+							]
+						}
+					}
+				},
+				{
+					"name": "3단계: 스터디 그룹 생성",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"테스트 스터디 그룹\",\n  \"description\": \"DMT 앱 테스트를 위한 스터디 그룹입니다.\",\n  \"maxMembers\": 5\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/study-groups?userId=1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"study-groups"
+							],
+							"query": [
+								{
+									"key": "userId",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "4단계: 스터디 세션 생성",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"studyGroupId\": 1,\n  \"sessionName\": \"첫 번째 스터디 세션\",\n  \"startTime\": \"2024-08-13T14:00:00\",\n  \"endTime\": \"2024-08-13T16:00:00\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/study-sessions?userId=1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"study-sessions"
+							],
+							"query": [
+								{
+									"key": "userId",
+									"value": "1"
+								}
+							]
+						}
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
+		}
+	]
+} 
