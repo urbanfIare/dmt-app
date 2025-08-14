@@ -4,6 +4,8 @@ import com.dmt.app.dto.StudyGroupDto;
 import com.dmt.app.entity.StudyGroup;
 import com.dmt.app.entity.StudyGroupMember;
 import com.dmt.app.entity.User;
+import com.dmt.app.exception.StudyGroupException;
+import com.dmt.app.exception.UserException;
 import com.dmt.app.repository.StudyGroupRepository;
 import com.dmt.app.repository.StudyGroupMemberRepository;
 import com.dmt.app.repository.UserRepository;
@@ -28,7 +30,7 @@ public class StudyGroupService {
     @Transactional
     public StudyGroupDto.Response createStudyGroup(Long userId, StudyGroupDto.CreateRequest request) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new UserException.UserNotFoundException("사용자 ID: " + userId));
         
         // 스터디 그룹 생성
         StudyGroup studyGroup = StudyGroup.builder()
@@ -58,7 +60,7 @@ public class StudyGroupService {
     
     public StudyGroupDto.Response getStudyGroupById(Long groupId) {
         StudyGroup studyGroup = studyGroupRepository.findById(groupId)
-                .orElseThrow(() -> new IllegalArgumentException("스터디 그룹을 찾을 수 없습니다."));
+                .orElseThrow(() -> new StudyGroupException.StudyGroupNotFoundException(groupId));
         
         return StudyGroupDto.Response.from(studyGroup);
     }
@@ -84,14 +86,14 @@ public class StudyGroupService {
     @Transactional
     public StudyGroupDto.Response updateStudyGroup(Long groupId, Long userId, StudyGroupDto.UpdateRequest request) {
         StudyGroup studyGroup = studyGroupRepository.findById(groupId)
-                .orElseThrow(() -> new IllegalArgumentException("스터디 그룹을 찾을 수 없습니다."));
+                .orElseThrow(() -> new StudyGroupException.StudyGroupNotFoundException(groupId));
         
         // 리더만 수정 가능
         StudyGroupMember member = studyGroupMemberRepository.findByUserIdAndStudyGroupId(userId, groupId)
-                .orElseThrow(() -> new IllegalArgumentException("그룹 멤버가 아닙니다."));
+                .orElseThrow(() -> new StudyGroupException.NotGroupMemberException(userId, groupId));
         
         if (member.getRole() != StudyGroupMember.MemberRole.LEADER) {
-            throw new IllegalArgumentException("그룹 리더만 수정할 수 있습니다.");
+            throw new StudyGroupException.NotGroupLeaderException(userId, groupId);
         }
         
         studyGroup.setName(request.getName());
@@ -107,14 +109,14 @@ public class StudyGroupService {
     @Transactional
     public void deleteStudyGroup(Long groupId, Long userId) {
         StudyGroup studyGroup = studyGroupRepository.findById(groupId)
-                .orElseThrow(() -> new IllegalArgumentException("스터디 그룹을 찾을 수 없습니다."));
+                .orElseThrow(() -> new StudyGroupException.StudyGroupNotFoundException(groupId));
         
         // 리더만 삭제 가능
         StudyGroupMember member = studyGroupMemberRepository.findByUserIdAndStudyGroupId(userId, groupId)
-                .orElseThrow(() -> new IllegalArgumentException("그룹 멤버가 아닙니다."));
+                .orElseThrow(() -> new StudyGroupException.NotGroupMemberException(userId, groupId));
         
         if (member.getRole() != StudyGroupMember.MemberRole.LEADER) {
-            throw new IllegalArgumentException("그룹 리더만 삭제할 수 있습니다.");
+            throw new StudyGroupException.NotGroupLeaderException(userId, groupId);
         }
         
         studyGroup.setStatus(StudyGroup.StudyGroupStatus.DELETED);

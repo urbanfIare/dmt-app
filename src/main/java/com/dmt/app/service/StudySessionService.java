@@ -5,6 +5,8 @@ import com.dmt.app.entity.StudyGroup;
 import com.dmt.app.entity.StudyGroupMember;
 import com.dmt.app.entity.StudySession;
 import com.dmt.app.entity.PhoneRestrictionException;
+import com.dmt.app.exception.StudyGroupException;
+import com.dmt.app.exception.StudySessionException;
 import com.dmt.app.repository.StudyGroupRepository;
 import com.dmt.app.repository.StudyGroupMemberRepository;
 import com.dmt.app.repository.StudySessionRepository;
@@ -36,24 +38,24 @@ public class StudySessionService {
     public StudySessionDto.Response createStudySession(Long userId, StudySessionDto.CreateRequest request) {
         // 스터디 그룹 존재 확인
         StudyGroup studyGroup = studyGroupRepository.findById(request.getStudyGroupId())
-                .orElseThrow(() -> new IllegalArgumentException("스터디 그룹을 찾을 수 없습니다."));
+                .orElseThrow(() -> new StudyGroupException.StudyGroupNotFoundException(request.getStudyGroupId()));
         
         // 그룹 멤버인지 확인
         StudyGroupMember member = studyGroupMemberRepository.findByUserIdAndStudyGroupId(userId, request.getStudyGroupId())
-                .orElseThrow(() -> new IllegalArgumentException("그룹 멤버가 아닙니다."));
+                .orElseThrow(() -> new StudyGroupException.NotGroupMemberException(userId, request.getStudyGroupId()));
         
         // 리더만 세션 생성 가능
         if (member.getRole() != StudyGroupMember.MemberRole.LEADER) {
-            throw new IllegalArgumentException("그룹 리더만 세션을 생성할 수 있습니다.");
+            throw new StudyGroupException.NotGroupLeaderException(userId, request.getStudyGroupId());
         }
         
         // 시간 유효성 검사
         if (request.getStartTime().isAfter(request.getEndTime())) {
-            throw new IllegalArgumentException("시작 시간은 종료 시간보다 빨라야 합니다.");
+            throw new StudySessionException.InvalidSessionTimeException("시작 시간은 종료 시간보다 빨라야 합니다.");
         }
         
         if (request.getStartTime().isBefore(LocalDateTime.now())) {
-            throw new IllegalArgumentException("시작 시간은 현재 시간보다 늦어야 합니다.");
+            throw new StudySessionException.InvalidSessionTimeException("시작 시간은 현재 시간보다 늦어야 합니다.");
         }
         
         // 기간 계산
@@ -76,7 +78,7 @@ public class StudySessionService {
     
     public StudySessionDto.Response getStudySessionById(Long sessionId) {
         StudySession studySession = studySessionRepository.findById(sessionId)
-                .orElseThrow(() -> new IllegalArgumentException("스터디 세션을 찾을 수 없습니다."));
+                .orElseThrow(() -> new StudySessionException.StudySessionNotFoundException(sessionId));
         
         return StudySessionDto.Response.from(studySession);
     }

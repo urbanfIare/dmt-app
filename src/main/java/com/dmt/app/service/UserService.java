@@ -2,6 +2,7 @@ package com.dmt.app.service;
 
 import com.dmt.app.dto.UserDto;
 import com.dmt.app.entity.User;
+import com.dmt.app.exception.UserException;
 import com.dmt.app.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,12 +26,12 @@ public class UserService {
     public UserDto.Response createUser(UserDto.CreateRequest request) {
         // 이메일 중복 체크
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
+            throw new UserException.DuplicateEmailException(request.getEmail());
         }
         
         // 닉네임 중복 체크
         if (userRepository.findByNickname(request.getNickname()).isPresent()) {
-            throw new IllegalArgumentException("이미 존재하는 닉네임입니다.");
+            throw new UserException.DuplicateNicknameException(request.getNickname());
         }
         
         // 사용자 생성 (BCrypt로 비밀번호 인코딩)
@@ -50,14 +51,14 @@ public class UserService {
     
     public UserDto.Response getUserById(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new UserException.UserNotFoundException("사용자 ID: " + userId));
         
         return UserDto.Response.from(user);
     }
     
     public UserDto.Response getUserByEmail(String email) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new UserException.UserNotFoundException("이메일: " + email));
         
         return UserDto.Response.from(user);
     }
@@ -65,12 +66,12 @@ public class UserService {
     @Transactional
     public UserDto.Response updateUser(Long userId, UserDto.UpdateRequest request) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new UserException.UserNotFoundException("사용자 ID: " + userId));
         
         // 닉네임 변경 시 중복 체크
         if (!user.getNickname().equals(request.getNickname()) && 
             userRepository.findByNickname(request.getNickname()).isPresent()) {
-            throw new IllegalArgumentException("이미 존재하는 닉네임입니다.");
+            throw new UserException.DuplicateNicknameException(request.getNickname());
         }
         
         user.setNickname(request.getNickname());
@@ -96,7 +97,7 @@ public class UserService {
     
     public UserDto.Response getLeaderByStudyGroupId(Long groupId) {
         User leader = userRepository.findLeaderByStudyGroupId(groupId)
-                .orElseThrow(() -> new IllegalArgumentException("그룹 리더를 찾을 수 없습니다."));
+                .orElseThrow(() -> new UserException.UserNotFoundException("그룹 ID: " + groupId + "의 리더"));
         
         return UserDto.Response.from(leader);
     }
@@ -104,7 +105,7 @@ public class UserService {
     @Transactional
     public void deleteUser(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new UserException.UserNotFoundException("사용자 ID: " + userId));
         
         userRepository.delete(user);
         log.info("사용자가 삭제되었습니다: {}", user.getEmail());

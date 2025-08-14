@@ -1,0 +1,831 @@
+{
+  "info": {
+    "name": "DMT API Test Collection",
+    "description": "DMT (Don't Touch My Time) 프로젝트의 표준화된 API 테스트 컬렉션입니다. 모든 API가 일관된 응답 형식을 제공합니다.",
+    "version": "2.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "authToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "groupId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "sessionId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{authToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// 자동으로 Authorization 헤더 설정",
+          "if (pm.environment.get('authToken')) {",
+          "    pm.request.headers.add({",
+          "        key: 'Authorization',",
+          "        value: 'Bearer ' + pm.environment.get('authToken')",
+          "    });",
+          "}"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// 공통 응답 형식 검증",
+          "pm.test('응답 형식 검증', function () {",
+          "    const response = pm.response.json();",
+          "    ",
+          "    // 필수 필드 존재 확인",
+          "    pm.expect(response).to.have.property('success');",
+          "    pm.expect(response).to.have.property('timestamp');",
+          "    ",
+          "    if (response.success) {",
+          "        pm.expect(response).to.have.property('message');",
+          "        // data 필드는 선택적 (메시지만 있는 경우도 있음)",
+          "        if (response.data !== undefined) {",
+          "            pm.expect(response).to.have.property('data');",
+          "        }",
+          "    } else {",
+          "        pm.expect(response).to.have.property('errorCode');",
+          "        pm.expect(response).to.have.property('message');",
+          "    }",
+          "});",
+          "",
+          "// HTTP 상태 코드 검증",
+          "pm.test('HTTP 상태 코드 검증', function () {",
+          "    if (pm.response.json().success) {",
+          "        pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+          "    } else {",
+          "        pm.expect(pm.response.code).to.be.oneOf([400, 401, 403, 404, 409, 500]);",
+          "    }",
+          "});",
+          "",
+          "// 응답 시간 검증",
+          "pm.test('응답 시간 검증', function () {",
+          "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+          "});",
+          "",
+          "// Content-Type 검증",
+          "pm.test('Content-Type 검증', function () {",
+          "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+          "});"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "🔐 인증 관리",
+      "item": [
+        {
+          "name": "회원가입",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"nickname\": \"테스트유저\",\n  \"password\": \"password123\",\n  \"phoneNumber\": \"010-1234-5678\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// 회원가입 성공 검증",
+                  "pm.test('회원가입 성공 검증', function () {",
+                  "    const response = pm.response.json();",
+                  "    ",
+                  "    pm.expect(response.success).to.be.true;",
+                  "    pm.expect(response.data).to.have.property('email');",
+                  "    pm.expect(response.data).to.have.property('nickname');",
+                  "    pm.expect(response.message).to.include('성공');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "로그인",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// 로그인 성공 검증 및 토큰 저장",
+                  "pm.test('로그인 성공 검증', function () {",
+                  "    const response = pm.response.json();",
+                  "    ",
+                  "    pm.expect(response.success).to.be.true;",
+                  "    pm.expect(response.data).to.have.property('token');",
+                  "    pm.expect(response.data).to.have.property('email');",
+                  "    ",
+                  "    // JWT 토큰을 환경 변수에 저장",
+                  "    if (response.data.token) {",
+                  "        pm.environment.set('authToken', response.data.token);",
+                  "        pm.environment.set('userId', response.data.userId || '1');",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "서비스 상태 확인",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "health"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "👤 사용자 관리",
+      "item": [
+        {
+          "name": "사용자 등록",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"newuser@example.com\",\n  \"nickname\": \"새사용자\",\n  \"password\": \"password123\",\n  \"phoneNumber\": \"010-9876-5432\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "register"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "사용자 조회 (ID)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "{{userId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "사용자 조회 (이메일)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/email/test@example.com",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "email", "test@example.com"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "사용자 정보 수정",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nickname\": \"수정된닉네임\",\n  \"phoneNumber\": \"010-1111-2222\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "{{userId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "전체 사용자 조회",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "사용자 삭제",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "{{userId}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🏠 스터디 그룹 관리",
+      "item": [
+        {
+          "name": "스터디 그룹 생성",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"알고리즘 스터디\",\n  \"description\": \"알고리즘 문제 풀이 스터디 그룹입니다.\",\n  \"maxMembers\": 8\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/study-groups?userId={{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "study-groups"],
+              "query": [
+                {
+                  "key": "userId",
+                  "value": "{{userId}}"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// 그룹 생성 성공 시 ID 저장",
+                  "pm.test('그룹 생성 성공 검증', function () {",
+                  "    const response = pm.response.json();",
+                  "    ",
+                  "    if (response.success && response.data) {",
+                  "        pm.environment.set('groupId', response.data.id);",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "스터디 그룹 조회",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/study-groups/{{groupId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "study-groups", "{{groupId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "전체 스터디 그룹 조회",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/study-groups",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "study-groups"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "활성 스터디 그룹 조회",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/study-groups/active",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "study-groups", "active"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "사용자별 스터디 그룹 조회",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/study-groups/user/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "study-groups", "user", "{{userId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "스터디 그룹 수정",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"수정된 알고리즘 스터디\",\n  \"description\": \"수정된 설명입니다.\",\n  \"maxMembers\": 10\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/study-groups/{{groupId}}?userId={{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "study-groups", "{{groupId}}"],
+              "query": [
+                {
+                  "key": "userId",
+                  "value": "{{userId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "스터디 그룹 참여",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/study-groups/{{groupId}}/join?userId={{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "study-groups", "{{groupId}}", "join"],
+              "query": [
+                {
+                  "key": "userId",
+                  "value": "{{userId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "스터디 그룹 탈퇴",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/study-groups/{{groupId}}/leave?userId={{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "study-groups", "{{groupId}}", "leave"],
+              "query": [
+                {
+                  "key": "userId",
+                  "value": "{{userId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "스터디 그룹 삭제",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/study-groups/{{groupId}}?userId={{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "study-groups", "{{groupId}}"],
+              "query": [
+                {
+                  "key": "userId",
+                  "value": "{{userId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "📚 스터디 세션 관리",
+      "item": [
+        {
+          "name": "스터디 세션 생성",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studyGroupId\": {{groupId}},\n  \"sessionName\": \"알고리즘 문제 풀이\",\n  \"startTime\": \"2024-01-01T14:00:00\",\n  \"endTime\": \"2024-01-01T16:00:00\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/study-sessions?userId={{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "study-sessions"],
+              "query": [
+                {
+                  "key": "userId",
+                  "value": "{{userId}}"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// 세션 생성 성공 시 ID 저장",
+                  "pm.test('세션 생성 성공 검증', function () {",
+                  "    const response = pm.response.json();",
+                  "    ",
+                  "    if (response.success && response.data) {",
+                  "        pm.environment.set('sessionId', response.data.id);",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "스터디 세션 조회",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/study-sessions/{{sessionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "study-sessions", "{{sessionId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "그룹별 세션 조회",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/study-sessions/study-group/{{groupId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "study-sessions", "study-group", "{{groupId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "예정된 세션 조회",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/study-sessions/study-group/{{groupId}}/upcoming",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "study-sessions", "study-group", "{{groupId}}", "upcoming"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "현재 진행 중인 세션 조회",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/study-sessions/current",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "study-sessions", "current"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "스터디 세션 수정",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionName\": \"수정된 세션명\",\n  \"startTime\": \"2024-01-01T15:00:00\",\n  \"endTime\": \"2024-01-01T17:00:00\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/study-sessions/{{sessionId}}?userId={{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "study-sessions", "{{sessionId}}"],
+              "query": [
+                {
+                  "key": "userId",
+                  "value": "{{userId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "세션 상태 변경",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"IN_PROGRESS\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/study-sessions/{{sessionId}}/status?userId={{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "study-sessions", "{{sessionId}}", "status"],
+              "query": [
+                {
+                  "key": "userId",
+                  "value": "{{userId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "폰 사용 제한 상태 확인",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/study-sessions/{{sessionId}}/phone-restriction-status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "study-sessions", "{{sessionId}}", "phone-restriction-status"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "사용자 폰 사용 제한 상태 확인",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/study-sessions/user/{{userId}}/phone-restriction",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "study-sessions", "user", "{{userId}}", "phone-restriction"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "스터디 세션 삭제",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/study-sessions/{{sessionId}}?userId={{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "study-sessions", "{{sessionId}}"],
+              "query": [
+                {
+                  "key": "userId",
+                  "value": "{{userId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🧪 에러 케이스 테스트",
+      "item": [
+        {
+          "name": "잘못된 이메일로 회원가입",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"invalid-email\",\n  \"nickname\": \"테스트\",\n  \"password\": \"password123\",\n  \"phoneNumber\": \"010-1234-5678\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "register"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// 입력값 검증 실패 테스트",
+                  "pm.test('입력값 검증 실패 테스트', function () {",
+                  "    const response = pm.response.json();",
+                  "    ",
+                  "    pm.expect(response.success).to.be.false;",
+                  "    pm.expect(response).to.have.property('errorCode');",
+                  "    pm.expect(response).to.have.property('message');",
+                  "    pm.expect(pm.response.code).to.equal(400);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "존재하지 않는 사용자 조회",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/999999",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "999999"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// 리소스 없음 테스트",
+                  "pm.test('리소스 없음 테스트', function () {",
+                  "    const response = pm.response.json();",
+                  "    ",
+                  "    pm.expect(response.success).to.be.false;",
+                  "    pm.expect(response.errorCode).to.equal('2000');",
+                  "    pm.expect(pm.response.code).to.equal(404);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "권한 없는 그룹 수정",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"권한 없는 수정\",\n  \"description\": \"권한이 없어서 수정할 수 없습니다.\",\n  \"maxMembers\": 5\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/study-groups/{{groupId}}?userId=999999",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "study-groups", "{{groupId}}"],
+              "query": [
+                {
+                  "key": "userId",
+                  "value": "999999"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// 권한 없음 테스트",
+                  "pm.test('권한 없음 테스트', function () {",
+                  "    const response = pm.response.json();",
+                  "    ",
+                  "    pm.expect(response.success).to.be.false;",
+                  "    pm.expect(response.errorCode).to.equal('3002');",
+                  "    pm.expect(pm.response.code).to.equal(403);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+} 

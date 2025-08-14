@@ -60,7 +60,41 @@ mvn spring-boot:run
 
 ### **Swagger UI**
 - **URL**: `http://localhost:8080/swagger-ui.html`
-- **기능**: API 테스트, 문서 확인, JWT 인증 설정
+- **기능**: API 테스트, 문서 확인, JWT 인증 설정, 표준 응답 형식 예시
+
+### **API 응답 형식**
+모든 API는 일관된 응답 형식을 제공합니다:
+
+**성공 응답:**
+```json
+{
+  "success": true,
+  "data": {...},
+  "message": "요청이 성공적으로 처리되었습니다.",
+  "timestamp": "2024-01-01 12:00:00"
+}
+```
+
+**실패 응답:**
+```json
+{
+  "success": false,
+  "errorCode": "2001",
+  "message": "이미 존재하는 사용자입니다.",
+  "errorDetail": "이메일: test@example.com",
+  "timestamp": "2024-01-01 12:00:00"
+}
+```
+
+### **에러 코드 체계**
+- **1000번대**: 공통 에러 (입력값 검증, 인증, 권한 등)
+- **2000번대**: 사용자 관련 에러 (사용자 없음, 중복 등)
+- **3000번대**: 스터디 그룹 관련 에러 (그룹 없음, 권한 없음 등)
+- **4000번대**: 스터디 세션 관련 에러 (세션 없음, 시간 충돌 등)
+- **5000번대**: 출석 관련 에러
+- **6000번대**: 폰 사용 제한 관련 에러
+- **7000번대**: 알림 관련 에러
+- **8000번대**: 파일 관련 에러
 
 ### **API 엔드포인트**
 - **인증**: `/api/auth/**` - 로그인, 회원가입
@@ -70,6 +104,10 @@ mvn spring-boot:run
 - **출석**: `/api/attendances/**` - 출석 관리
 - **폰 사용 제한**: `/api/phone-exceptions/**` - 예외 관리
 - **실시간 모니터링**: `/api/realtime/**` - 실시간 상태
+
+### **추가 문서**
+- **API 응답 가이드**: [API_RESPONSE_GUIDE.md](./API_RESPONSE_GUIDE.md)
+- **API 응답 예시**: [API_EXAMPLES.md](./API_EXAMPLES.md)
 
 ---
 
@@ -103,8 +141,32 @@ mvn spring-boot:run
 
 ## 🧪 **테스트 및 개발**
 
+### **테스트 실행**
+```bash
+# 전체 테스트 실행
+./mvnw test
+
+# 테스트 커버리지 포함 실행
+./mvnw clean test jacoco:report
+
+# Windows에서 실행
+run-tests.bat
+```
+
+### **테스트 구조**
+- **단위 테스트**: `src/test/java/com/dmt/app/service/`
+- **컨트롤러 테스트**: `src/test/java/com/dmt/app/controller/`
+- **통합 테스트**: `src/test/java/com/dmt/app/integration/`
+- **테스트 설정**: `src/test/resources/application-test.yml`
+
+### **테스트 커버리지**
+- JaCoCo 플러그인으로 코드 커버리지 측정
+- 리포트 위치: `target/site/jacoco/index.html`
+
 ### **개발 도구**
-- **Postman 컬렉션**: `DMT-API-Collection.postman_collection.json`
+- **Postman 테스트 컬렉션**: `DMT-API-Test-Collection.postman_collection.json`
+- **Postman 환경 설정**: `DMT-API-Environment.postman_environment.json`
+- **API 테스트 실행**: `run-api-tests.bat`
 - **curl 명령어**: `curl-commands.md`
 - **WebSocket 테스트**: `websocket-test.html`
 
@@ -112,6 +174,12 @@ mvn spring-boot:run
 1. **기본 플로우**: 회원가입 → 로그인 → 그룹 생성 → 세션 생성
 2. **핵심 기능**: 폰 사용 제한 예외 신청 → 리더 승인
 3. **실시간 기능**: WebSocket 연결 → 알림 구독 → 실시간 알림
+
+### **API 테스트 자동화**
+- **Postman 컬렉션**: 표준화된 응답 형식 검증
+- **자동 테스트**: 응답 형식, 상태 코드, 에러 처리 검증
+- **환경 변수**: 테스트 데이터 자동 관리
+- **테스트 실행**: `run-api-tests.bat`로 간편 실행
 
 ---
 
